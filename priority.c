@@ -60,14 +60,16 @@ int main(){
     }
 
     printf("Waiting Time:\n");
+    printf("PID WT\n");
     for(i=0;i<n;i++)
         printf("%s %d\n",p[i].pid,p[i].wt);
 
-    printf("Turnaround Time:\n");
+    printf("\nTurnaround Time:\n");
+    printf("PID TAT\n");
     for(i=0;i<n;i++)
         printf("%s %d\n",p[i].pid,p[i].tat);
 
-    printf("Average Waiting Time: %.2f\n",avg_wt/n);
+    printf("\nAverage Waiting Time: %.2f\n",avg_wt/n);
     printf("Average Turnaround Time: %.2f\n",avg_tat/n);
 
     return 0;
