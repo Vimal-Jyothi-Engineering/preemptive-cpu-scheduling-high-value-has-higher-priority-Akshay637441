@@ -1,77 +1,86 @@
 #include <stdio.h>
 #include <string.h>
 
-struct process{
+#define MAX 100
+
+typedef struct {
     char pid[10];
     int at, bt, pr;
-    int rt;
-    int ct, wt, tat;
-};
+    int remaining;
+    int wt, tat;
+    int completed;
+} Process;
 
-int main(){
+int main() {
     int n;
-    scanf("%d",&n);
+    scanf("%d", &n);
 
-    struct process p[20];
-    int i;
-
-    for(i=0;i<n;i++){
-        scanf("%s %d %d %d",p[i].pid,&p[i].at,&p[i].bt,&p[i].pr);
-        p[i].rt = p[i].bt;
+    Process p[MAX];
+    for (int i = 0; i < n; i++) {
+        scanf("%s %d %d %d", p[i].pid, &p[i].at, &p[i].bt, &p[i].pr);
+        p[i].remaining = p[i].bt;
+        p[i].wt = 0;
+        p[i].tat = 0;
+        p[i].completed = 0;
     }
 
-    int completed = 0, time = 0;
-    int idx, max_pr;
+    int time = 0, done = 0;
+    int finish_time[MAX];
 
-    while(completed < n){
-        idx = -1;
-        max_pr = -1;
+    // Find total time needed (max possible end time)
+    int total_bt = 0;
+    for (int i = 0; i < n; i++) total_bt += p[i].bt;
 
-        for(i=0;i<n;i++){
-            if(p[i].at <= time && p[i].rt > 0){
-                if(p[i].pr > max_pr){
-                    max_pr = p[i].pr;
+    while (done < n) {
+        // Find highest priority process that has arrived and is not completed
+        int idx = -1;
+        for (int i = 0; i < n; i++) {
+            if (!p[i].completed && p[i].at <= time) {
+                if (idx == -1 || p[i].pr > p[idx].pr) {
                     idx = i;
                 }
             }
         }
 
-        if(idx != -1){
-            p[idx].rt--;
+        if (idx == -1) {
+            // No process available, advance time
             time++;
-
-            if(p[idx].rt == 0){
-                p[idx].ct = time;
-                completed++;
-            }
+            continue;
         }
-        else{
-            time++;
+
+        // Run the selected process for 1 unit
+        p[idx].remaining--;
+        time++;
+
+        if (p[idx].remaining == 0) {
+            p[idx].completed = 1;
+            finish_time[idx] = time;
+            p[idx].tat = finish_time[idx] - p[idx].at;
+            p[idx].wt = p[idx].tat - p[idx].bt;
+            done++;
         }
-    }
-
-    float avg_wt = 0, avg_tat = 0;
-
-    for(i=0;i<n;i++){
-        p[i].tat = p[i].ct - p[i].at;
-        p[i].wt = p[i].tat - p[i].bt;
-
-        avg_wt += p[i].wt;
-        avg_tat += p[i].tat;
     }
 
     printf("Waiting Time:\n");
-    for(i=0;i<n;i++){
-        printf("%s %d\n",p[i].pid,p[i].wt);
+    for (int i = 0; i < n; i++) {
+        printf("%s %d\n", p[i].pid, p[i].wt);
     }
 
     printf("\nTurnaround Time:\n");
-    for(i=0;i<n;i++){
-        printf("%s %d\n",p[i].pid,p[i].tat);
+    for (int i = 0; i < n; i++) {
+        printf("%s %d\n", p[i].pid, p[i].tat);
     }
 
-    printf("\nAverage Waiting Time: %.2f\n",avg_wt/n);
-    printf("Average Turnaround Time: %.2f\n",avg_tat/n);
+    double avg_wt = 0, avg_tat = 0;
+    for (int i = 0; i < n; i++) {
+        avg_wt += p[i].wt;
+        avg_tat += p[i].tat;
+    }
+    avg_wt /= n;
+    avg_tat /= n;
+
+    printf("\nAverage Waiting Time: %.2f\n", avg_wt);
+    printf("Average Turnaround Time: %.2f\n", avg_tat);
 
     return 0;
 }
